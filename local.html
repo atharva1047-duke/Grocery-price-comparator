@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Local Grocery Price Comparator</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa, #c3cfe2);
+            margin: 0;
+            padding: 0;
+            color: #333;
+        }
+        header {
+            background-color: #4CAF50;
+            color: white;
+            padding: 20px 0;
+            text-align: center;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+        }
+        header h1 {
+            margin: 0;
+            font-size: 2.5em;
+        }
+        .container {
+            max-width: 700px;
+            margin: 30px auto;
+            background: white;
+            border-radius: 10px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+            padding: 20px;
+        }
+        input, select, button {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid #ccc;
+            box-sizing: border-box;
+            font-size: 1em;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 20px;
+        }
+        th, td {
+            border: 1px solid #ddd;
+            padding: 12px;
+            text-align: left;
+        }
+        th {
+            background-color: #f4f4f4;
+        }
+        #recommendation {
+            background: #e7f5e7;
+            border: 1px solid #b5e0b5;
+            border-radius: 5px;
+            padding: 10px;
+            margin-top: 20px;
+        }
+        footer {
+            text-align: center;
+            padding: 15px;
+            margin-top: 20px;
+            font-size: 0.9em;
+            color: #777;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <h1>Local Grocery Price Comparator</h1>
+</header>
+
+<div class="container">
+    <input type="text" id="item" placeholder="Enter Grocery Item" />
+    <input type="text" id="store" placeholder="Enter Store Name" />
+    <input type="number" id="price" placeholder="Enter Price" />
+    <button onclick="addItem()">Add Price</button>
+
+    <h2>Price Comparison</h2>
+    <table id="priceTable">
+        <thead>
+            <tr>
+                <th>Item</th>
+                <th>Store</th>
+                <th>Price</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <h3>Cheapest Store Recommendation</h3>
+    <div id="recommendation"></div>
+</div>
+
+<footer>
+    © 2025 Grocery Compare Inc. | Helping you shop smarter!
+</footer>
+
+<script>
+    let prices = JSON.parse(localStorage.getItem('prices') || '[]');
+
+    function addItem() {
+        const item = document.getElementById('item').value.trim();
+        const store = document.getElementById('store').value.trim();
+        const price = parseFloat(document.getElementById('price').value);
+
+        if (item && store && !isNaN(price)) {
+            prices.push({ item, store, price });
+            localStorage.setItem('prices', JSON.stringify(prices));
+            document.getElementById('item').value = '';
+            document.getElementById('store').value = '';
+            document.getElementById('price').value = '';
+            renderTable();
+            recommendCheapest();
+        } else {
+            alert('Please enter valid details.');
+        }
+    }
+
+    function renderTable() {
+        const tbody = document.querySelector('#priceTable tbody');
+        tbody.innerHTML = '';
+        prices.forEach(entry => {
+            const row = document.createElement('tr');
+            row.innerHTML = `
+                <td>${entry.item}</td>
+                <td>${entry.store}</td>
+                <td>₹${entry.price.toFixed(2)}</td>
+            `;
+            tbody.appendChild(row);
+        });
+    }
+
+    function recommendCheapest() {
+        const recommendationDiv = document.getElementById('recommendation');
+        const grouped = {};
+
+        prices.forEach(({ item, store, price }) => {
+            if (!grouped[item] || price < grouped[item].price) {
+                grouped[item] = { store, price };
+            }
+        });
+
+        let output = '';
+        for (const item in grouped) {
+            output += `<p><strong>${item}</strong>: Buy at <em>${grouped[item].store}</em> for ₹${grouped[item].price.toFixed(2)}</p>`;
+        }
+
+        recommendationDiv.innerHTML = output || '<p>No items added yet.</p>';
+    }
+
+    renderTable();
+    recommendCheapest();
+</script>
+
+</body>
+</html>
